@@ -8,9 +8,9 @@ const timerMachine = Machine(
       seconds: new Date().getSeconds(),
       minutes: new Date().getMinutes(),
       hours: new Date().getHours(),
-      alarmHour: 1,
-      alarmMins: 11,
-      alarmSec: 30,
+      day: new Date().getDay(),
+      alarmHour: 3,
+      alarmMins: 59,
       alarm: "off",
     },
     invoke: {
@@ -22,17 +22,25 @@ const timerMachine = Machine(
         initial: "alarmOff",
         states: {
           alarmOff: {
-            always: {
-              cond: "checkIfTimeEqualsAlarmTime",
-              target: "alarmOn",
-              actions: "setAlarmOn",
-            },
+            on: {
+              TICK: {
+                cond: "checkIfTimeEqualsAlarmTime",
+                target: "alarmOn",
+                actions: "setAlarmOn",
+              },
+            }
           },
           alarmOn: {
             after: {
               10000: {
                 target: "alarmOff",
                 actions: "setAlarmOff"
+              }
+            },
+            on: {
+              STOP: {
+                target: "alarmOff",
+                actions: "setAlarmOff",
               }
             }
           }
@@ -100,13 +108,12 @@ const timerMachine = Machine(
       },
     },
     guards: {
-      checkIfSecondsEqualsSixty: (context) => context.seconds === 60,
-      checkIfMinutesEqualsSixty: (context) => context.minutes === 60,
-      checkIfHoursEqualsTwentyFour: (context) => context.hours === 24,
+      checkIfSecondsEqualsSixty: (context) => context.seconds === 59,
+      checkIfMinutesEqualsSixty: (context) => context.minutes === 59,
+      checkIfHoursEqualsTwentyFour: (context) => context.hours === 23,
       checkIfTimeEqualsAlarmTime: (context) =>
         context.hours === context.alarmHour &&
-        context.minutes === context.alarmMins &&
-        context.seconds === context.alarmSec,
+        context.minutes === context.alarmMins
     },
   }
 );

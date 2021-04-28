@@ -50,6 +50,11 @@ h1 {
   justify-content: center;
 }
 
+.day {
+  text-align: center;
+  font-size: 4em;
+}
+
 .timeNow h1 {
   font-family: 'digital-clock-font';
   font-size: 10em;
