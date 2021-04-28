@@ -3,34 +3,75 @@ import { Machine, assign } from "xstate";
 const timerMachine = Machine(
   {
     id: "TimerMachine",
-    initial: "idle",
+    type: "parallel",
     context: {
       seconds: new Date().getSeconds(),
       minutes: new Date().getMinutes(),
       hours: new Date().getHours(),
+      alarmHour: 1,
+      alarmMins: 11,
+      alarmSec: 30,
+      alarm: "off",
     },
     invoke: {
       id: "Timer",
       src: "timer",
     },
     states: {
-      idle: {
-        on: {
-          TICK: [
-            {
-              cond: "checkIfSecondsEqualsSixty",
-              actions: ["setSecondsToZero", "incrementMinutes"],
+      alarm: {
+        initial: "alarmOff",
+        states: {
+          alarmOff: {
+            always: {
+              cond: "checkIfTimeEqualsAlarmTime",
+              target: "alarmOn",
+              actions: "setAlarmOn",
             },
-            {
-              cond: "checkIfMinutesEqualsSixty",
-              actions: ["setMinutesToZero", "incrementHours"],
+          },
+          alarmOn: {
+            after: {
+              10000: {
+                target: "alarmOff",
+                actions: "setAlarmOff"
+              }
+            }
+          }
+        }
+      },
+      time: {
+        initial: "idle",
+        states: {
+          idle: {
+            on: {
+              TICK: [
+                {
+                  cond: "checkIfSecondsEqualsSixty",
+                  actions: ["setSecondsToZero", "incrementMinutes"],
+                },
+                {
+                  cond: "checkIfMinutesEqualsSixty",
+                  actions: ["setMinutesToZero", "incrementHours"],
+                },
+                {
+                  cond: "checkIfHoursEqualsTwentyFour",
+                  actions: [
+                    "setMinutesToZero",
+                    "setHoursToZero",
+                    "setSecondsToZero",
+                  ],
+                },
+                {
+                  actions: ["incrementSeconds"],
+                },
+              ],
+              RESET: {
+                actions: [
+                  "setSecondsToZero",
+                  "setMinutesToZero",
+                  "setHoursToZero",
+                ],
+              },
             },
-            {
-              actions: ["incrementSeconds"],
-            },
-          ],
-          RESET: {
-            actions: ["setSecondsToZero", "setMinutesToZero", "setHoursToZero"],
           },
         },
       },
@@ -39,26 +80,33 @@ const timerMachine = Machine(
   {
     actions: {
       incrementSeconds: assign({
-        seconds: (context, _) => context.seconds + 1,
+        seconds: (context) => context.seconds + 1,
       }),
       incrementMinutes: assign({
-        minutes: (context, _) => context.minutes + 1,
+        minutes: (context) => context.minutes + 1,
       }),
       incrementHours: assign({
-        minutes: (context, _) => context.seconds + 1,
+        minutes: (context) => context.seconds + 1,
       }),
-      setSecondsToZero: assign({ seconds: (context, _) => 0 }),
-      setMinutesToZero: assign({ minutes: (context, _) => 0 }),
-      setHoursToZero: assign({ hours: (context, _) => 0 }),
+      setSecondsToZero: assign({ seconds: (context) => 0 }),
+      setMinutesToZero: assign({ minutes: (context) => 0 }),
+      setHoursToZero: assign({ hours: (context) => 0 }),
+      setAlarmOn: assign({ alarm: (context) => "on" }),
+      setAlarmOff: assign({ alarm: (context) => "off" }),
     },
     services: {
-      timer: (context, _) => (send) => {
+      timer: (context) => (send) => {
         setInterval(() => send("TICK"), 1000);
       },
     },
     guards: {
-        checkIfSecondsEqualsSixty: (context, _) =>  (context.seconds === 60),
-        checkIfMinutesEqualsSixty: (context, _) =>  (context.minutes === 60),
+      checkIfSecondsEqualsSixty: (context) => context.seconds === 60,
+      checkIfMinutesEqualsSixty: (context) => context.minutes === 60,
+      checkIfHoursEqualsTwentyFour: (context) => context.hours === 24,
+      checkIfTimeEqualsAlarmTime: (context) =>
+        context.hours === context.alarmHour &&
+        context.minutes === context.alarmMins &&
+        context.seconds === context.alarmSec,
     },
   }
 );

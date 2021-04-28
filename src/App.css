@@ -80,3 +80,14 @@ button {
   text-align: center;
 }
 
+.setAlarm {
+  margin-top: 5%;
+}
+
+.alarmClock {
+  height: 500px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
