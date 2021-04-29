@@ -1,16 +1,36 @@
-import { Machine, assign } from "xstate";
+import { Machine, assign, MachineConfig, AnyStateNodeDefinition  } from "xstate";
 
-const timerMachine = Machine(
-  {
-    id: "TimerMachine",
+type TEvent = {
+  type: string,
+  payload: string
+}
+
+type TContext = {
+  year: number,
+  month: number;
+  date: number,
+  seconds: number,
+  minutes: number,
+  hours: number,
+  day: number,
+  alarmHour: number,
+  alarmMins: number,
+  alarm: string
+}
+
+const machineConfig: MachineConfig<TContext, AnyStateNodeDefinition, TEvent> = {
+  id: "TimerMachine",
     type: "parallel",
     context: {
+      year: new Date().getFullYear(),
+      month: new Date().getMonth(),
+      date: new Date().getDate(),
       seconds: new Date().getSeconds(),
       minutes: new Date().getMinutes(),
       hours: new Date().getHours(),
       day: new Date().getDay(),
       alarmHour: 3,
-      alarmMins: 59,
+      alarmMins: 37,
       alarm: "off",
     },
     invoke: {
@@ -28,6 +48,9 @@ const timerMachine = Machine(
                 target: "alarmOn",
                 actions: "setAlarmOn",
               },
+              SET_ALARM: {
+                actions: ["setAlarmHourInput", "setAlarmMinsInput", (context) => console.log("PJ", context.alarmHour, context.alarmMins)]
+              }
             }
           },
           alarmOn: {
@@ -40,7 +63,7 @@ const timerMachine = Machine(
             on: {
               STOP: {
                 target: "alarmOff",
-                actions: "setAlarmOff",
+                actions: ["setAlarmOff", "setAlarmHour", "setAlarmMins"]
               }
             }
           }
@@ -54,19 +77,23 @@ const timerMachine = Machine(
               TICK: [
                 {
                   cond: "checkIfSecondsEqualsSixty",
-                  actions: ["setSecondsToZero", "incrementMinutes"],
+                  actions: ["resetSeconds", "incrementMinutes"],
                 },
                 {
                   cond: "checkIfMinutesEqualsSixty",
-                  actions: ["setMinutesToZero", "incrementHours"],
+                  actions: ["resetMinutes", "incrementHours"],
                 },
                 {
-                  cond: "checkIfHoursEqualsTwentyFour",
+                  cond: "checkIfHoursEqualsTwelve",
                   actions: [
-                    "setMinutesToZero",
-                    "setHoursToZero",
-                    "setSecondsToZero",
+                    "resetMinutes",
+                    "resetHours",
+                    "resetSeconds", "incrementDay",
                   ],
+                },
+                {
+                  cond: "checkIfDaysEqualsSeven",
+                  actions: ["restartDay"]
                 },
                 {
                   actions: ["incrementSeconds"],
@@ -74,9 +101,10 @@ const timerMachine = Machine(
               ],
               RESET: {
                 actions: [
-                  "setSecondsToZero",
-                  "setMinutesToZero",
-                  "setHoursToZero",
+                  "resetSeconds",
+                  "resetMinutes",
+                  "resetHours",
+                  "resetDay"
                 ],
               },
             },
@@ -84,37 +112,51 @@ const timerMachine = Machine(
         },
       },
     },
-  },
+}
+
+const timerMachine = Machine(
+machineConfig,
   {
     actions: {
       incrementSeconds: assign({
-        seconds: (context) => context.seconds + 1,
+        seconds: ({seconds}) => seconds + 1,
       }),
       incrementMinutes: assign({
-        minutes: (context) => context.minutes + 1,
+        minutes: ({minutes}) => minutes + 1,
       }),
       incrementHours: assign({
-        minutes: (context) => context.seconds + 1,
+        minutes: ({hours}) => hours + 1,
       }),
-      setSecondsToZero: assign({ seconds: (context) => 0 }),
-      setMinutesToZero: assign({ minutes: (context) => 0 }),
-      setHoursToZero: assign({ hours: (context) => 0 }),
-      setAlarmOn: assign({ alarm: (context) => "on" }),
-      setAlarmOff: assign({ alarm: (context) => "off" }),
+      incrementDay: assign({ day: ({day}) => day + 1}),
+      resetSeconds: assign({ seconds: () => new Date().getSeconds() }),
+      resetMinutes: assign({ minutes: () => new Date().getMinutes() }),
+      resetHours: assign({ hours: () => new Date().getHours() }),
+      resetDay: assign({day: ({day}) => new Date().getDay()}),
+      restartDay: assign({day: ({day}) => 1}),
+      setAlarmOn: assign({ alarm: () => "on" }),
+      setAlarmOff: assign({ alarm: () => "off" }),
+      setAlarmHour: assign({alarmHour: ({alarmHour}) => alarmHour - 1}),
+      setAlarmMins: assign({alarmMins: ({alarmMins}) => alarmMins - 1}),
+      setAlarmHourInput: assign({alarmHour: (_, {payload}) => + (payload?.split(":")[0]) }),
+      setAlarmMinsInput: assign({alarmMins: (_, {payload}) => +(payload?.split(":")[1])  })
     },
     services: {
-      timer: (context) => (send) => {
+      timer: () => (send) => {
         setInterval(() => send("TICK"), 1000);
       },
     },
     guards: {
-      checkIfSecondsEqualsSixty: (context) => context.seconds === 59,
-      checkIfMinutesEqualsSixty: (context) => context.minutes === 59,
-      checkIfHoursEqualsTwentyFour: (context) => context.hours === 23,
-      checkIfTimeEqualsAlarmTime: (context) =>
-        context.hours === context.alarmHour &&
-        context.minutes === context.alarmMins
+      checkIfSecondsEqualsSixty: ({seconds}) => seconds === 59,
+      checkIfMinutesEqualsSixty: ({minutes}) => minutes === 59,
+      checkIfHoursEqualsTwelve: ({hours}) => hours === 12,
+      checkIfTimeEqualsAlarmTime: ({hours, alarmHour, minutes, alarmMins}) =>
+        hours === alarmHour &&
+        minutes === alarmMins,
+      checkIfDaysEqualsSeven: ({day}) => day === 7,
     },
+
+
+
   }
 );
 

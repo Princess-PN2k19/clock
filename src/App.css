@@ -55,6 +55,10 @@ h1 {
   font-size: 4em;
 }
 
+.date {
+  font-size: 3em;
+}
+
 .timeNow h1 {
   font-family: 'digital-clock-font';
   font-size: 10em;
@@ -75,7 +79,7 @@ button {
   border-radius: 8px;
   cursor: pointer;
   font-size: 18px;
-  width: 6%;
+  width: 7%;
   height: 45px;
   margin-left: 10px;
   margin-right: 10px;
@@ -87,6 +91,7 @@ button {
 
 .setAlarm {
   margin-top: 5%;
+  text-align: center;
 }
 
 .alarmClock {
@@ -96,3 +101,19 @@ button {
   margin-right: auto;
 }
 
+.inputTime{
+  margin-top: 3%;
+  height: 45px!important;
+  width: 8%!important;
+  background-color: rgb(158, 154, 154);
+  border: 3px solid #555;
+  border-radius: 5px;
+}
+
+.alarm {
+  text-align: center;
+}
+
+.stopBtn {
+  margin-bottom: 5%;
+}
