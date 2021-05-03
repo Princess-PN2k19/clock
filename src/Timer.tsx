@@ -3,13 +3,11 @@ import React, { useState } from "react";
 import { useMachine } from "@xstate/react";
 import alarmGIF from "./image/alarm.gif";
 import timerMachine from "./machine";
-import { mapContext } from "xstate/lib/utils";
 
 function Timer() {
   // eslint-disable-next-line
   const [time, send] = useMachine(timerMachine);
   const [alarmTime, setAlarmTime] = useState("12:00");
-  // const [alarmMins, setAlarmMins] = useState(0)
   const days = [
     "Monday",
     "Tuesday",
@@ -19,6 +17,7 @@ function Timer() {
     "Saturday",
     "Sunday",
   ];
+  
 
   return (
     <div className="divTimer">
