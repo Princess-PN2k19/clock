@@ -58,8 +58,6 @@ const machineConfig: MachineConfig<TContext, AnyStateNodeDefinition, TEvent> = {
               actions: [
                 "setAlarmHourInput",
                 "setAlarmMinsInput",
-                (context) =>
-                  console.log("PJ", context.alarmHour, context.alarmMins),
               ],
             },
           },

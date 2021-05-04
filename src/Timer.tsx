@@ -39,6 +39,7 @@ function Timer() {
         )}
         <h1>{time.context.minutes}:</h1>
         <h1>{time.context.seconds}</h1>
+        <h1>{(time.context.hours%12)?"AM":"PM"}</h1>
       </div>
       <div className="buttonsDiv">
         <button onClick={() => send("TICK")}>Increment</button>
