@@ -96,12 +96,8 @@ const machineConfig: MachineConfig<TContext, AnyStateNodeDefinition, TEvent> = {
                 actions: ["restartMins", "incrementHours"],
               },
               {
-                cond: "checkIfHoursEqualsTwelve",
-                actions: ["restartMins", "restartHours", "restartSec"],
-              },
-              {
                 cond: "checkIfHoursEqualsTwentyFour",
-                actions: ["incrementDate", "incrementDay"],
+                actions: ["incrementDate", "incrementDay", "restartHours"],
               },
               {
                 cond: "checkIfDaysEqualsSeven",
@@ -121,7 +117,7 @@ const machineConfig: MachineConfig<TContext, AnyStateNodeDefinition, TEvent> = {
               },
               {
                 cond: "checkIfMonthsEqualsTwelve",
-                actions: ["incrementYear", "restartMonth"]
+                actions: ["incrementYear", "restartMonth"],
               },
               {
                 actions: ["incrementSeconds"],
@@ -135,7 +131,7 @@ const machineConfig: MachineConfig<TContext, AnyStateNodeDefinition, TEvent> = {
                 "resetDay",
                 "resetDate",
                 "resetMonth",
-                "resetYear"
+                "resetYear",
               ],
             },
           },
@@ -186,14 +182,13 @@ const timerMachine = Machine(machineConfig, {
   },
   services: {
     timer: () => (send) => {
-      setInterval(() => send("TICK"), 0.00009);
+      setInterval(() => send("TICK"), 0.999999999);
     },
   },
   guards: {
     checkIfSecondsEqualsSixty: ({ seconds }) => seconds === 61,
     checkIfMinutesEqualsSixty: ({ minutes }) => minutes === 61,
-    checkIfHoursEqualsTwelve: ({ hours }) => hours === 13,
-    checkIfHoursEqualsTwentyFour: ({ hours }) => hours === 25,
+    checkIfHoursEqualsTwentyFour: ({ hours }) => hours === 24,
     checkIfTimeEqualsAlarmTime: ({ hours, alarmHour, minutes, alarmMins }) =>
       hours === alarmHour && minutes === alarmMins,
     checkIfDaysEqualsSeven: ({ day }) => day === 7,

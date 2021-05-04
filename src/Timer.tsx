@@ -17,7 +17,6 @@ function Timer() {
     "Saturday",
     "Sunday",
   ];
-  
 
   return (
     <div className="divTimer">
@@ -33,6 +32,8 @@ function Timer() {
       <div className="timeNow">
         {time.context.hours === 0 ? (
           <h1>12:</h1>
+        ) : time.context.hours > 12 ? (
+          <h1>{time.context.hours - 12}:</h1>
         ) : (
           <h1>{time.context.hours}:</h1>
         )}
