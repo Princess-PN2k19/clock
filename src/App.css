@@ -67,6 +67,10 @@ h1 {
   text-shadow: 2px 5px 5px #f10417;
 }
 
+.meridiem {
+  margin: 20px!important;
+}
+
 .timeNow {
   text-align: center;
   margin-top: 5%;
